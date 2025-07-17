@@ -7,7 +7,7 @@ include_once "ldap_functions.inc.php";
 include_once "module_functions.inc.php";
 set_page_access("admin");
 
-render_header("$ORGANISATION_NAME account manager");
+render_header("$ORGANISATION_NAME 用户管理系统");
 render_submenu();
 
 $invalid_password = FALSE;
@@ -18,18 +18,18 @@ $to_update = array();
 
 if ($SMTP['host'] != "") { $can_send_email = TRUE; } else { $can_send_email = FALSE; }
 
-$LDAP['default_attribute_map']["mail"]  = array("label" => "Email", "onkeyup" => "check_if_we_should_enable_sending_email();");
+$LDAP['default_attribute_map']["mail"]  = array("label" => "邮箱", "onkeyup" => "check_if_we_should_enable_sending_email();");
 
 $attribute_map = $LDAP['default_attribute_map'];
 if (isset($LDAP['account_additional_attributes'])) { $attribute_map = ldap_complete_attribute_array($attribute_map,$LDAP['account_additional_attributes']); }
 if (! array_key_exists($LDAP['account_attribute'], $attribute_map)) {
-  $attribute_r = array_merge($attribute_map, array($LDAP['account_attribute'] => array("label" => "Account UID")));
+  $attribute_r = array_merge($attribute_map, array($LDAP['account_attribute'] => array("label" => "账户 UID")));
 }
 
 if (!isset($_POST['account_identifier']) and !isset($_GET['account_identifier'])) {
 ?>
  <div class="alert alert-danger">
-  <p class="text-center">The account identifier is missing.</p>
+  <p class="text-center">缺少账户标识符。</p>
  </div>
 <?php
 render_footer();
@@ -108,7 +108,7 @@ if ($ldap_search) {
  else {
    ?>
     <div class="alert alert-danger">
-     <p class="text-center">This account doesn't exist.</p>
+     <p class="text-center">此账户不存在。</p>
     </div>
    <?php
    render_footer();
@@ -189,37 +189,37 @@ if ($ldap_search) {
 
       $sent_email = send_email($mail[0],"{$givenname[0]} {$sn[0]}",$mail_subject,$mail_body);
       if ($sent_email) {
-        $sent_email_message .= "  An email sent to {$mail[0]}.";
+        $sent_email_message .= "  邮件已发送至 {$mail[0]}。";
       }
       else {
-        $sent_email_message .= "  Unfortunately the email wasn't sent; check the logs for more information.";
+        $sent_email_message .= "  很抱歉，邮件未能发送；请查看日志获取更多信息。";
       }
     }
 
   if ($updated_account) {
-    render_alert_banner("The account has been updated.  $sent_email_message");
+    render_alert_banner("账户已更新。  $sent_email_message");
   }
   else {
-    render_alert_banner("There was a problem updating the account.  Check the logs for more information.","danger",15000);
+    render_alert_banner("更新账户时出现问题。  请查看日志获取更多信息。","danger",15000);
   }
  }
 
 
  if ($weak_password) { ?>
  <div class="alert alert-warning">
-  <p class="text-center">The password wasn't strong enough.</p>
+  <p class="text-center">密码强度不够。</p>
  </div>
  <?php }
 
  if ($invalid_password) {  ?>
  <div class="alert alert-warning">
-  <p class="text-center">The password contained invalid characters.</p>
+  <p class="text-center">密码包含无效字符。</p>
  </div>
  <?php }
 
  if ($mismatched_passwords) {  ?>
  <div class="alert alert-warning">
-  <p class="text-center">The passwords didn't match.</p>
+  <p class="text-center">密码不匹配。</p>
  </div>
  <?php }
 
@@ -261,7 +261,7 @@ if ($ldap_search) {
 
   $not_member_of = array_diff($all_groups,$updated_group_membership);
   $member_of = $updated_group_membership;
-  render_alert_banner("The group membership has been updated.");
+  render_alert_banner("组成员身份已更新。");
 
  }
  else {
@@ -281,6 +281,7 @@ if ($ldap_search) {
 </script>
 <script type="text/javascript" src="<?php print $SERVER_PATH; ?>js/generate_passphrase.js"></script>
 <script type="text/javascript" src="<?php print $SERVER_PATH; ?>js/wordlist.js"></script>
+<script type="text/javascript" src="<?php print $SERVER_PATH; ?>js/pinyin-pro.js"></script>
 <script>
 
  function show_delete_user_button() {
@@ -305,7 +306,7 @@ if ($ldap_search) {
 
  function random_password() {
 
-  generatePassword(4,'-','password','confirm');
+  generatePassword(4,'','password','confirm');
   $("#StrengthProgressBar").zxcvbnProgressBar({ passwordInput: "#password" });
  }
 
@@ -410,7 +411,14 @@ if ($ldap_search) {
 
 </script>
 
-<?php render_dynamic_field_js(); ?>
+<?php
+render_js_username_check();
+render_js_username_generator('givenname','sn','uid','uid_div');
+render_js_cn_generator('givenname','sn','cn','cn_div');
+render_js_email_generator('uid','mail');
+render_js_homedir_generator('uid','homedirectory');
+render_dynamic_field_js(); 
+?>
 
 <style type='text/css'>
   .dual-list .list-group {
@@ -442,8 +450,8 @@ if ($ldap_search) {
   <div class="panel panel-default">
     <div class="panel-heading clearfix">
      <span class="panel-title pull-left"><h3><?php print $account_identifier; ?></h3></span>
-     <button class="btn btn-warning pull-right align-self-end" style="margin-top: auto;" onclick="show_delete_user_button();" <?php if ($account_identifier == $USER_ID) { print "disabled"; }?>>Delete account</button>
-     <form action="<?php print "{$THIS_MODULE_PATH}"; ?>/index.php" method="post"><input type="hidden" name="delete_user" value="<?php print urlencode($account_identifier); ?>"><button class="btn btn-danger pull-right invisible" id="delete_user">Confirm deletion</button></form>
+     <button class="btn btn-warning pull-right align-self-end" style="margin-top: auto;" onclick="show_delete_user_button();" <?php if ($account_identifier == $USER_ID) { print "disabled"; }?>>删除账户</button>
+     <form action="<?php print "{$THIS_MODULE_PATH}"; ?>/index.php" method="post"><input type="hidden" name="delete_user" value="<?php print urlencode($account_identifier); ?>"><button class="btn btn-danger pull-right invisible" id="delete_user">确认删除</button></form>
     </div>
     <ul class="list-group">
       <li class="list-group-item"><?php print $dn; ?></li>
@@ -467,17 +475,17 @@ if ($ldap_search) {
       ?>
 
       <div class="form-group" id="password_div">
-       <label for="password" class="col-sm-3 control-label">Password</label>
+       <label for="password" class="col-sm-3 control-label">密码</label>
        <div class="col-sm-6">
         <input type="password" class="form-control" id="password" name="password" onkeyup="back_to_hidden('password','confirm'); check_if_we_should_enable_sending_email();">
        </div>
        <div class="col-sm-1">
-        <input type="button" class="btn btn-sm" id="password_generator" onclick="random_password(); check_if_we_should_enable_sending_email();" value="Generate password">
+        <input type="button" class="btn btn-sm" id="password_generator" onclick="random_password(); check_if_we_should_enable_sending_email();" value="生成密码">
        </div>
       </div>
 
       <div class="form-group" id="confirm_div">
-       <label for="confirm" class="col-sm-3 control-label">Confirm</label>
+       <label for="confirm" class="col-sm-3 control-label">确认密码</label>
        <div class="col-sm-6">
         <input type="password" class="form-control" id="confirm" name="password_match" onkeyup="check_passwords_match()">
        </div>
@@ -487,14 +495,14 @@ if ($ldap_search) {
       <div class="form-group" id="send_email_div">
         <label for="send_email" class="col-sm-3 control-label"> </label>
         <div class="col-sm-6">
-          <input type="checkbox" class="form-check-input" id="send_email_checkbox" name="send_email" disabled>  Email the updated credentials to the user?
+          <input type="checkbox" class="form-check-input" id="send_email_checkbox" name="send_email" disabled>  将更新的凭据通过邮件发送给用户？
         </div>
       </div>
 <?php } ?>
 
 
       <div class="form-group">
-        <p align='center'><button type="submit" class="btn btn-default">Update account details</button></p>
+        <p align='center'><button type="submit" class="btn btn-primary">更新</button></p>
       </div>
 
     </form>
@@ -503,7 +511,7 @@ if ($ldap_search) {
      <div id="StrengthProgressBar" class="progress-bar"></div>
     </div>
 
-    <div><p align='center'><sup>&ast;</sup>The account identifier.  Changing this will change the full <strong>DN</strong>.</p></div>
+    <div><p align='center'><sup>&ast;</sup> 账户标识符请谨慎修改！ 更改此项将更改完整的 <strong>用户DN</strong>。</p></div>
 
    </div>
   </div>
@@ -516,25 +524,25 @@ if ($ldap_search) {
 
   <div class="panel panel-default">
    <div class="panel-heading clearfix">
-    <h3 class="panel-title pull-left" style="padding-top: 7.5px;">Group membership</h3>
+    <h3 class="panel-title pull-left" style="padding-top: 7.5px;">组成员身份</h3>
    </div>
    <div class="panel-body">
 
     <div class="row">
 
          <div class="dual-list list-left col-md-5">
-          <strong>Member of</strong>
+          <strong>所属组</strong>
           <div class="well">
            <div class="row">
             <div class="col-md-10">
              <div class="input-group">
               <span class="input-group-addon glyphicon glyphicon-search"></span>
-              <input type="text" name="SearchDualList" class="form-control" placeholder="search" />
+              <input type="text" name="SearchDualList" class="form-control" placeholder="搜索" />
              </div>
             </div>
             <div class="col-md-2">
              <div class="btn-group">
-              <a class="btn btn-default selector" title="select all"><i class="glyphicon glyphicon-unchecked"></i></a>
+              <a class="btn btn-default selector" title="全选"><i class="glyphicon glyphicon-unchecked"></i></a>
              </div>
             </div>
            </div>
@@ -564,21 +572,21 @@ if ($ldap_search) {
            <input type="hidden" name="update_member_of">
            <input type="hidden" name="account_identifier" value="<?php print $account_identifier; ?>">
           </form>
-          <button id="submit_members" class="btn btn-info" disabled type="submit" onclick="update_form_with_groups()">Save</button>
+          <button id="submit_members" class="btn btn-info" disabled type="submit" onclick="update_form_with_groups()">保存</button>
          </div>
 
          <div class="dual-list list-right col-md-5">
-          <strong>Available groups</strong>
+          <strong>可用组</strong>
           <div class="well">
            <div class="row">
             <div class="col-md-2">
              <div class="btn-group">
-              <a class="btn btn-default selector" title="select all"><i class="glyphicon glyphicon-unchecked"></i></a>
+              <a class="btn btn-default selector" title="全选"><i class="glyphicon glyphicon-unchecked"></i></a>
              </div>
             </div>
             <div class="col-md-10">
              <div class="input-group">
-              <input type="text" name="SearchDualList" class="form-control" placeholder="search" />
+              <input type="text" name="SearchDualList" class="form-control" placeholder="搜索" />
               <span class="input-group-addon glyphicon glyphicon-search"></span>
              </div>
             </div>

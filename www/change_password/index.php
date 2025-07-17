@@ -19,14 +19,14 @@ if (isset($_POST['change_password'])) {
   $ldap_connection = open_ldap_connection();
   ldap_change_password($ldap_connection,$USER_ID,$_POST['password']) or die("change_ldap_password() failed.");
 
-  render_header("$ORGANISATION_NAME account manager - password changed");
+  render_header("$ORGANISATION_NAME 用户管理系统 - 更改密码");
   ?>
   <div class="container">
     <div class="col-sm-6 col-sm-offset-3">
       <div class="panel panel-success">
-        <div class="panel-heading">Success</div>
+        <div class="panel-heading">成功</div>
         <div class="panel-body">
-          Your password has been updated.
+          您的密码已成功更新。
         </div>
       </div>
     </div>
@@ -38,23 +38,23 @@ if (isset($_POST['change_password'])) {
 
 }
 
-render_header("Change your $ORGANISATION_NAME password");
+render_header("更改您的 $ORGANISATION_NAME 密码");
 
 if (isset($not_strong_enough)) {  ?>
 <div class="alert alert-warning">
- <p class="text-center">The password wasn't strong enough.</p>
+ <p class="text-center">密码强度不够。</p>
 </div>
 <?php }
 
 if (isset($invalid_chars)) {  ?>
 <div class="alert alert-warning">
- <p class="text-center">The password contained invalid characters.</p>
+ <p class="text-center">密码包含无效字符。</p>
 </div>
 <?php }
 
 if (isset($mismatched)) {  ?>
 <div class="alert alert-warning">
- <p class="text-center">The passwords didn't match.</p>
+ <p class="text-center">两次输入的密码不匹配。</p>
 </div>
 <?php }
 
@@ -68,11 +68,15 @@ if (isset($mismatched)) {  ?>
  <div class="col-sm-6 col-sm-offset-3">
 
   <div class="panel panel-default">
-   <div class="panel-heading text-center">Change your password</div>
+   <div class="panel-heading text-center">更改您的密码</div>
 
    <ul class="list-group">
-    <li class="list-group-item">Use this form to change your <?php print $ORGANISATION_NAME; ?> password.  When you start typing your new password the gauge at the bottom will show its security strength.
-    Enter your password again in the <b>confirm</b> field.  If the passwords don't match then both fields will be bordered with red.</li>
+    <li class="list-group-item">
+      <p>使用此表单更改您的 <?php print $ORGANISATION_NAME; ?> 密码。</p>  
+      <p>当您开始输入新密码时，底部的仪表将显示其安全强度。</p>  
+      <p>请在<b>确认</b>字段中再次输入您的密码。</p>  
+      <p>如果密码不匹配，两个字段都会显示红色边框。</p>  
+     </li>
    </ul>
 
    <div class="panel-body text-center">
@@ -83,7 +87,7 @@ if (isset($mismatched)) {  ?>
      <input type='hidden' id="pass_score" value="0" name="pass_score">
      
      <div class="form-group" id="password_div">
-      <label for="password" class="col-sm-4 control-label">Password</label>
+      <label for="password" class="col-sm-4 control-label">密码</label>
       <div class="col-sm-6">
        <input type="password" class="form-control" id="password" name="password">
       </div>
@@ -104,14 +108,14 @@ if (isset($mismatched)) {  ?>
      </script>
 
      <div class="form-group" id="confirm_div">
-      <label for="password" class="col-sm-4 control-label">Confirm</label>
+      <label for="password" class="col-sm-4 control-label">确认密码</label>
       <div class="col-sm-6">
        <input type="password" class="form-control" id="confirm" name="password_match" onkeyup="check_passwords_match()">
       </div>
      </div>
 
      <div class="form-group">
-       <button type="submit" class="btn btn-default">Change password</button>
+       <button type="submit" class="btn btn-default">更改密码</button>
      </div>
      
     </form>
@@ -130,4 +134,3 @@ if (isset($mismatched)) {  ?>
 render_footer();
 
 ?>
-

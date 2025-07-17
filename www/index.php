@@ -8,7 +8,7 @@ render_header();
  if (isset($_GET['logged_in'])) {
  ?>
  <div class="alert alert-success">
- <p class="text-center">You're logged in. Select from the menu above.</p>
+ <p class="text-center">您已登录，请点击导航菜单继续！</p>
  </div>
  <?php
  }

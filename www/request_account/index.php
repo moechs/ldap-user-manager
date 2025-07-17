@@ -1,15 +1,15 @@
 <?php
 
-set_include_path( ".:" . __DIR__ . "/../includes/");
+set_include_path(".:" . __DIR__ . "/../includes/");
 session_start();
 
 include_once "web_functions.inc.php";
 
-render_header("$ORGANISATION_NAME - request an account");
+render_header("$ORGANISATION_NAME - 申请账户");
 
 if ($ACCOUNT_REQUESTS_ENABLED == FALSE) {
 
-?><div class='alert alert-warning'><p class='text-center'>Account requesting is disabled.</p></div><?php
+?><div class='alert alert-warning'><p class='text-center'>账户申请功能已禁用。</p></div><?php
 
 render_footer();
 exit(0);
@@ -21,18 +21,18 @@ if($_POST) {
   $error_messages = array();
 
   if(! isset($_POST['validate']) or strcasecmp($_POST['validate'], $_SESSION['proof_of_humanity']) != 0) {
-    array_push($error_messages, "The validation text didn't match the image.");
+    array_push($error_messages, "验证码与图片不匹配。");
   }
 
   if (! isset($_POST['firstname']) or $_POST['firstname'] == "") {
-    array_push($error_messages, "You didn't enter your first name.");
+    array_push($error_messages, "您没有输入名字。");
   }
   else {
     $firstname=filter_var($_POST['firstname'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
   }
 
   if (! isset($_POST['lastname']) or $_POST['lastname'] == "") {
-    array_push($error_messages, "You didn't enter your first name.");
+    array_push($error_messages, "您没有输入姓氏。");
   }
   else {
     $lastname=filter_var($_POST['lastname'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
@@ -49,7 +49,7 @@ if($_POST) {
 
   if (count($error_messages) > 0) { ?>
     <div class="alert alert-danger" role="alert">
-    The request couldn't be sent because:
+    请求无法发送，原因如下：
     <p>
     <ul>
       <?php
@@ -63,7 +63,7 @@ if($_POST) {
   }
   else {
 
-    $mail_subject = "$firstname $lastname has requested an account for $ORGANISATION_NAME.";
+    $mail_subject = "$firstname $lastname 申请了 $ORGANISATION_NAME 的账户。";
 
 $link_url="{$SITE_PROTOCOL}{$SERVER_HOSTNAME}{$SERVER_PATH}account_manager/new_user.php?account_request&first_name=$firstname&last_name=$lastname&email=$email";
 
@@ -71,25 +71,25 @@ if (!isset($email)) { $email = "n/a"; }
 if (!isset($notes)) { $notes = "n/a"; }
 
     $mail_body = <<<EoT
-A request for an $ORGANISATION_NAME account has been sent:
+有人提交了 $ORGANISATION_NAME 账户申请：
 <p>
-First name: <b>$firstname</b><br>
-Last name: <b>$lastname</b><br>
-Email: <b>$email</b><br>
-Notes: <pre>$notes</pre><br>
+名字: <b>$firstname</b><br>
+姓氏: <b>$lastname</b><br>
+邮箱: <b>$email</b><br>
+备注: <pre>$notes</pre><br>
 <p>
-<a href="$link_url">Create this account.</a>
+<a href="$link_url">点击这里创建该账户。</a>
 EoT;
 
      include_once "mail_functions.inc.php";
-     $sent_email = send_email($ACCOUNT_REQUESTS_EMAIL,"$ORGANISATION_NAME account requests",$mail_subject,$mail_body);
+     $sent_email = send_email($ACCOUNT_REQUESTS_EMAIL,"$ORGANISATION_NAME 账户申请",$mail_subject,$mail_body);
      if ($sent_email) { ?>
        <div class="container">
          <div class="col-sm-6 col-sm-offset-3">
            <div class="panel panel-success">
-             <div class="panel-heading">Thank you</div>
+             <div class="panel-heading">谢谢</div>
              <div class="panel-body">
-               The request was sent and the administrator will process it as soon as possible.
+               请求已发送，管理员会尽快处理。
              </div>
            </div>
          </div>
@@ -99,9 +99,9 @@ EoT;
        <div class="container">
          <div class="col-sm-6 col-sm-offset-3">
            <div class="panel panel-danger">
-             <div class="panel-heading">Error</div>
+             <div class="panel-heading">错误</div>
              <div class="panel-body">
-               Unfortunately the account request wasn't sent because of a technical issue.
+               很遗憾，由于技术原因，账户申请未能成功发送。
              </div>
            </div>
          </div>
@@ -119,60 +119,60 @@ EoT;
 
   <div class="panel panel-default">
     <div class="panel-body">
-    Use this form to send a request for an account to an administrator at <?php print $ORGANISATION_NAME; ?>.
-    If the administrator approves your request they'll get in touch with you to give you your new credentials.
+    使用此表单向 <?php print $ORGANISATION_NAME; ?> 管理员发送账户申请。
+    如果管理员批准，TA 会与您联系并提供新账户信息。
     </div>
   </div>
 
   <div class="panel panel-default"> 
-   <div class="panel-heading text-center">Request an account for <?php print $ORGANISATION_NAME; ?></div>
+   <div class="panel-heading text-center">申请 <?php print $ORGANISATION_NAME; ?> 账户</div>
    <div class="panel-body text-center">
 
    <form class="form-horizontal" action='' method='post'>
 
     <div class="form-group">
-     <label for="firstname" class="col-sm-4 control-label">First name</label>
+     <label for="firstname" class="col-sm-4 control-label">名字</label>
      <div class="col-sm-6">
-      <input type="text" class="form-control" id="firstname" name="firstname" placeholder="Required" <?php if (isset($firstname)) { print "value='$firstname'"; } ?>>
+      <input type="text" class="form-control" id="firstname" name="firstname" placeholder="必填" <?php if (isset($firstname)) { print "value='$firstname'"; } ?>>
      </div>
     </div>
 
     <div class="form-group">
-     <label for="lastname" class="col-sm-4 control-label">Last name</label>
+     <label for="lastname" class="col-sm-4 control-label">姓氏</label>
      <div class="col-sm-6">
-      <input type="text" class="form-control" id="lastname" name="lastname" placeholder="Required" <?php if (isset($lastname)) { print "value='$lastname'"; } ?>>
+      <input type="text" class="form-control" id="lastname" name="lastname" placeholder="必填" <?php if (isset($lastname)) { print "value='$lastname'"; } ?>>
      </div>
     </div>
 
     <div class="form-group">
-     <label for="email" class="col-sm-4 control-label">Email</label>
+     <label for="email" class="col-sm-4 control-label">邮箱</label>
      <div class="col-sm-6">
       <input type="text" class="form-control" id="email" name="email" <?php if (isset($email)) { print "value='$email'"; } ?>>
      </div>
     </div>
 
     <div class="form-group">
-     <label for="Notes" class="col-sm-4 control-label">Notes</label>
+     <label for="Notes" class="col-sm-4 control-label">备注</label>
      <div class="col-sm-6">
-      <textarea class="form-control" id="notes" name="notes" placeholder="Enter any extra information you think the administrator might need to know."><?php if (isset($notes)) { print $notes; } ?></textarea>
+      <textarea class="form-control" id="notes" name="notes" placeholder="可输入您想让管理员了解的其他信息"><?php if (isset($notes)) { print $notes; } ?></textarea>
      </div>
     </div>
 
     <div class="form-group">
-     <label for="validate" class="col-sm-4 control-label">Validation</label>
+     <label for="validate" class="col-sm-4 control-label">验证码</label>
      <div class="col-sm-6">
       <span class="center-block">
-        <img src="human.php" class="human-check" alt="Non-human detection">
+        <img src="human.php" class="human-check" alt="人机验证">
         <button type="button" class="btn btn-default btn-sm" onclick="document.querySelector('.human-check').src = 'human.php?' + Date.now()">
-         <span class="glyphicon glyphicon-refresh"></span> Refresh
+         <span class="glyphicon glyphicon-refresh"></span> 刷新
         </button>
       </span>
-      <input type="text" class="form-control center-block" id="validate" name="validate" placeholder="Enter the characters from the image">
+      <input type="text" class="form-control center-block" id="validate" name="validate" placeholder="请输入图片中的字符">
      </div>
     </div>
 
     <div class="form-group">
-     <button type="submit" class="btn btn-default">Send request</button>
+     <button type="submit" class="btn btn-default">提交申请</button>
     </div>
    
    </form>

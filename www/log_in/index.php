@@ -45,31 +45,31 @@ if (isset($_POST["user_id"]) and isset($_POST["password"])) {
 }
 else {
 
- render_header("$ORGANISATION_NAME account manager - log in");
+ render_header("$ORGANISATION_NAME 用户管理系统 - 登录");
 
  ?>
 <div class="container">
  <div class="col-sm-8 col-sm-offset-2">
 
   <div class="panel panel-default">
-   <div class="panel-heading text-center">Log in</div>
+   <div class="panel-heading text-center">登录</div>
    <div class="panel-body text-center">
 
    <?php if (isset($display_unauth)) { ?>
    <div class="alert alert-warning">
-    Please log in to continue
+    请先登录！
    </div>
    <?php } ?>
 
    <?php if (isset($display_logged_out)) { ?>
    <div class="alert alert-warning">
-    You were logged out because your session expired. Log in again to continue.
+    由于会话已过期，您已退出。请重新登录！
    </div>
    <?php } ?>
 
    <?php if (isset($_GET["invalid"])) { ?>
    <div class="alert alert-warning">
-    The username and/or password are unrecognised.
+    无效的用户名或密码！
    </div>
    <?php } ?>
 
@@ -84,14 +84,14 @@ else {
     </div>
 
     <div class="form-group">
-     <label for="password" class="col-sm-4 control-label">Password</label>
+     <label for="password" class="col-sm-4 control-label">密码</label>
      <div class="col-sm-6">
       <input type="password" class="form-control" id="confirm" name="password">
      </div>
     </div>
 
     <div class="form-group">
-     <button type="submit" class="btn btn-default">Log in</button>
+     <button type="submit" class="btn btn-default">登录</button>
     </div>
 
    </form>

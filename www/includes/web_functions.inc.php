@@ -84,11 +84,22 @@ function set_passkey_cookie($user_id,$is_admin) {
  $sessto_cookie_opts = $DEFAULT_COOKIE_OPTIONS;
  $sessto_cookie_opts['expires'] = $this_time+7200;
  setcookie('sessto_cookie', $this_time+(60 * $SESSION_TIMEOUT), $sessto_cookie_opts);
- if ( $SESSION_DEBUG == TRUE) {  error_log("$log_prefix Session: user $user_id validated (IS_ADMIN={$IS_ADMIN}), sent orf_cookie to the browser.",0); }
+ if ( $SESSION_DEBUG == TRUE) {  error_log("$log_prefix 会话：用户 $user_id 已验证 (IS_ADMIN={$IS_ADMIN})，已发送 orf_cookie 到浏览器。",0); }
+
  $VALIDATED = TRUE;
 
 }
 
+######################################################
+
+function get_module_display_name($module) {
+    global $MODULE_NAMES_CN;
+    if (isset($MODULE_NAMES_CN[$module])) {
+        return $MODULE_NAMES_CN[$module];
+    } else {
+        return stripslashes(ucwords(preg_replace('/_/',' ',$module)));
+    }
+}
 
 ######################################################
 
@@ -121,7 +132,7 @@ function validate_passkey_cookie() {
     $filename = preg_replace('/[^a-zA-Z0-9]/','_', $user_id);
     $session_file = @ file_get_contents("/tmp/$filename");
     if (!$session_file) {
-      if ($SESSION_DEBUG == TRUE) {  error_log("$log_prefix Session: orf_cookie was sent by the client but the session file wasn't found at /tmp/$filename",0); }
+      if ($SESSION_DEBUG == TRUE) {  error_log("$log_prefix 会话：客户端发送了 orf_cookie，但未找到会话文件 /tmp/$filename",0); }
     }
     else {
       list($f_passkey,$f_is_admin,$f_time) = explode(":",$session_file);
@@ -129,15 +140,15 @@ function validate_passkey_cookie() {
         if ($f_is_admin == 1) { $IS_ADMIN = TRUE; }
         $VALIDATED = TRUE;
         $USER_ID=$user_id;
-        if ($SESSION_DEBUG == TRUE) {  error_log("$log_prefix Setup session: Cookie and session file values match for user {$user_id} - VALIDATED (ADMIN = {$IS_ADMIN})",0); }
+        if ($SESSION_DEBUG == TRUE) {  error_log("$log_prefix 设置会话：Cookie 和会话文件匹配，用户 {$user_id} 已验证 (ADMIN = {$IS_ADMIN})",0); }
         set_passkey_cookie($USER_ID,$IS_ADMIN);
       }
       else {
         if ($SESSION_DEBUG == TRUE) {
-          $this_error="$log_prefix Session: orf_cookie was sent by the client and the session file was found at /tmp/$filename, but";
-          if (empty($c_passkey)) { $this_error .= " the cookie passkey wasn't set;"; }
-          if ($c_passkey != $f_passkey) { $this_error .= " the session file passkey didn't match the cookie passkey;"; }
-          $this_error.=" Cookie: {$_COOKIE['orf_cookie']} - Session file contents: $session_file";
+          $this_error="$log_prefix 会话：客户端发送了 orf_cookie，找到会话文件 /tmp/$filename，但";
+          if (empty($c_passkey)) { $this_error .= " Cookie 中 passkey 未设置;"; }
+          if ($c_passkey != $f_passkey) { $this_error .= " 会话文件中的 passkey 与 Cookie 不匹配;"; }
+          $this_error.=" Cookie: {$_COOKIE['orf_cookie']} - 会话文件内容: $session_file";
           error_log($this_error,0);
         }
       }
@@ -145,12 +156,12 @@ function validate_passkey_cookie() {
 
   }
   else {
-    if ($SESSION_DEBUG == TRUE) { error_log("$log_prefix Session: orf_cookie wasn't sent by the client.",0); }
+    if ($SESSION_DEBUG == TRUE) { error_log("$log_prefix 会话：客户端未发送 orf_cookie。",0); }
     if (isset($_COOKIE['sessto_cookie'])) {
       $this_session_timeout = $_COOKIE['sessto_cookie'];
       if ($this_time >= $this_session_timeout) {
         $SESSION_TIMED_OUT = TRUE;
-        if ($SESSION_DEBUG == TRUE) { error_log("$log_prefix Session: The session had timed-out (over $SESSION_TIMEOUT mins idle).",0); }
+        if ($SESSION_DEBUG == TRUE) { error_log("$log_prefix 会话：会话已超时（空闲超过 $SESSION_TIMEOUT 分钟）。",0); }
       }
     }
   }
@@ -175,7 +186,7 @@ function set_setup_cookie() {
 
  setcookie('setup_cookie', $passkey, $DEFAULT_COOKIE_OPTIONS);
 
- if ( $SESSION_DEBUG == TRUE) {  error_log("$log_prefix Setup session: sent setup_cookie to the client.",0); }
+ if ( $SESSION_DEBUG == TRUE) {  error_log("$log_prefix 设置会话：已发送 setup_cookie 给客户端。",0); }
 
 }
 
@@ -192,25 +203,25 @@ function validate_setup_cookie() {
   $session_file = file_get_contents("/tmp/ldap_setup");
   if (!$session_file) {
    $IS_SETUP_ADMIN = FALSE;
-   if ( $SESSION_DEBUG == TRUE) {  error_log("$log_prefix Setup session: setup_cookie was sent by the client but the session file wasn't found at /tmp/ldap_setup",0); }
+   if ( $SESSION_DEBUG == TRUE) {  error_log("$log_prefix 设置会话：客户端发送了 setup_cookie，但未找到会话文件 /tmp/ldap_setup",0); }
   }
   list($f_passkey,$f_time) = explode(":",$session_file);
   $this_time=time();
   if (!empty($c_passkey) and $f_passkey == $c_passkey and $this_time < $f_time+(60 * $SESSION_TIMEOUT)) {
    $IS_SETUP_ADMIN = TRUE;
-   if ( $SESSION_DEBUG == TRUE) {  error_log("$log_prefix Setup session: Cookie and session file values match - VALIDATED ",0); }
+   if ( $SESSION_DEBUG == TRUE) {  error_log("$log_prefix 设置会话：Cookie 和会话文件匹配 - 验证成功",0); }
    set_setup_cookie();
   }
   elseif ( $SESSION_DEBUG == TRUE) {
-   $this_error="$log_prefix Setup session: setup_cookie was sent by the client and the session file was found at /tmp/ldap_setup, but";
-   if (empty($c_passkey)) { $this_error .= " the cookie passkey wasn't set;"; }
-   if ($c_passkey != $f_passkey) { $this_error .= " the session file passkey didn't match the cookie passkey;"; }
-   $this_error += " Cookie: {$_COOKIE['setup_cookie']} - Session file contents: $session_file";
+   $this_error="$log_prefix 设置会话：客户端发送了 setup_cookie，找到会话文件 /tmp/ldap_setup，但";
+   if (empty($c_passkey)) { $this_error .= " Cookie 中 passkey 未设置;"; }
+   if ($c_passkey != $f_passkey) { $this_error .= " 会话文件中的 passkey 与 Cookie 不匹配;"; }
+   $this_error .= " Cookie: {$_COOKIE['setup_cookie']} - 会话文件内容: $session_file";
    error_log($this_error,0);
   }
  }
  elseif ( $SESSION_DEBUG == TRUE) {
-   error_log("$log_prefix Session: setup_cookie wasn't sent by the client.",0);
+   error_log("$log_prefix 会话：客户端未发送 setup_cookie。",0);
  }
 
 }
@@ -247,7 +258,7 @@ function log_out($method='normal') {
 
 function render_header($title="",$menu=TRUE) {
 
- global $SITE_NAME, $IS_ADMIN, $SENT_HEADERS, $SERVER_PATH, $CUSTOM_STYLES;
+ global $SITE_NAME, $IS_ADMIN, $SENT_HEADERS, $SERVER_PATH;
 
  if (empty($title)) { $title = $SITE_NAME; }
 
@@ -260,7 +271,6 @@ function render_header($title="",$menu=TRUE) {
  <meta charset="utf-8">
  <meta name="viewport" content="width=device-width, initial-scale=1">
  <link rel="stylesheet" href="<?php print $SERVER_PATH; ?>bootstrap/css/bootstrap.min.css">
- <?php if ($CUSTOM_STYLES) echo '<link rel="stylesheet" href="'.$CUSTOM_STYLES.'">' ?>
  <script src="<?php print $SERVER_PATH; ?>js/jquery-3.6.0.min.js"></script>
  <script src="<?php print $SERVER_PATH; ?>bootstrap/js/bootstrap.min.js"></script>
 </HEAD>
@@ -279,7 +289,7 @@ function render_header($title="",$menu=TRUE) {
   </script>
   <div class="alert alert-success">
     <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="TRUE">&times;</span></button>
-    <p class="text-center">You've logged in successfully.</p>
+    <p class="text-center">登录成功！</p>
   </div>
   <?php
 
@@ -296,20 +306,19 @@ function render_menu() {
  #Render the navigation menu.
  #The menu is dynamically rendered the $MODULES hash
 
- global $SITE_NAME, $MODULES, $THIS_MODULE, $VALIDATED, $IS_ADMIN, $USER_ID, $SERVER_PATH, $CUSTOM_LOGO;
+ global $SITE_NAME, $MODULES, $THIS_MODULE, $VALIDATED, $IS_ADMIN, $USER_ID, $SERVER_PATH;
 
  ?>
   <nav class="navbar navbar-default">
    <div class="container-fluid">
-   <div class="navbar-header"><?php
-      if ($CUSTOM_LOGO) echo '<span class="navbar-brand"><img src="'.$CUSTOM_LOGO.'" class="logo" alt="logo"></span>'
-     ?><a class="navbar-brand" href="./"><?php print $SITE_NAME ?></a>
-   </div>
+     <div class="navbar-header">
+       <a class="navbar-brand" href="#"><?php print $SITE_NAME ?></a>
+     </div>
      <ul class="nav navbar-nav">
      <?php
      foreach ($MODULES as $module => $access) {
 
-      $this_module_name=stripslashes(ucwords(preg_replace('/_/',' ',$module)));
+      $this_module_name = get_module_display_name($module);
 
       $show_this_module = TRUE;
       if ($VALIDATED == TRUE) {
@@ -372,7 +381,7 @@ function set_page_access($level) {
   }
   else {
    header("Location: //" . $_SERVER["HTTP_HOST"] . "{$SERVER_PATH}setup/index.php?unauthorised\n\n");
-   if ( $SESSION_DEBUG == TRUE) {  error_log("$log_prefix Session: UNAUTHORISED: page security level is 'setup' but IS_SETUP_ADMIN isn't TRUE",0); }
+   if ( $SESSION_DEBUG == TRUE) {  error_log("$log_prefix 会话：未授权：页面安全级别为 'setup' 但 IS_SETUP_ADMIN 不为 TRUE",0); }
    exit(0);
   }
  }
@@ -385,7 +394,7 @@ function set_page_access($level) {
   }
   else {
    header("Location: //" . $_SERVER["HTTP_HOST"] . "{$SERVER_PATH}log_in/index.php?$reason&redirect_to=" . base64_encode($_SERVER['REQUEST_URI']) . "\n\n");
-   if ( $SESSION_DEBUG == TRUE) {  error_log("$log_prefix Session: no access to page ($reason): page security level is 'admin' but IS_ADMIN = '{$IS_ADMIN}' and VALIDATED = '{$VALIDATED}' (user) ",0); }
+   if ( $SESSION_DEBUG == TRUE) {  error_log("$log_prefix 会话：无权限访问页面 ($reason)：需要 'admin' 权限，但 IS_ADMIN='{$IS_ADMIN}' 且 VALIDATED='{$VALIDATED}'",0); }
    exit(0);
   }
  }
@@ -396,7 +405,7 @@ function set_page_access($level) {
   }
   else {
    header("Location: //" . $_SERVER["HTTP_HOST"] . "{$SERVER_PATH}log_in/index.php?$reason&redirect_to=" . base64_encode($_SERVER['REQUEST_URI']) . "\n\n");
-   if ( $SESSION_DEBUG == TRUE) {  error_log("$log_prefix Session: no access to page ($reason): page security level is 'user' but VALIDATED = '{$VALIDATED}'",0); }
+   if ( $SESSION_DEBUG == TRUE) {  error_log("$log_prefix 会话：无权限访问页面 ($reason)：需要 'user' 权限，但 VALIDATED='{$VALIDATED}'",0); }
    exit(0);
   }
  }
@@ -464,6 +473,46 @@ function generate_username($fn,$ln) {
 
 }
 
+######################################################
+
+function render_js_cn_generator($firstname_field_id,$lastname_field_id,$cn_field_id,$cn_div_id) {
+
+ #Parameters are the IDs of the input fields and username name div in the account creation form.
+ #The div will be set to warning if the username is invalid.
+
+ global $USERNAME_FORMAT, $ENFORCE_SAFE_SYSTEM_NAMES;
+
+  $remove_accents="";
+  if ($ENFORCE_SAFE_SYSTEM_NAMES == TRUE) { $remove_accents = ".normalize('NFD').replace(/[\u0300-\u036f]/g, '')"; }
+
+  print <<<EoRenderJS
+
+<script>
+ function update_cn() {
+
+  var first_name = document.getElementById('$firstname_field_id').value;
+  var last_name  = document.getElementById('$lastname_field_id').value;
+  var template = '$USERNAME_FORMAT';
+
+  var this_cn = template;
+
+  this_cn = this_cn.replace('{first_name}', first_name.toLowerCase()$remove_accents );
+  this_cn = this_cn.replace('{first_name_initial}', first_name.charAt(0).toLowerCase()$remove_accents );
+  this_cn = this_cn.replace('{last_name}', last_name.toLowerCase()$remove_accents );
+  this_cn = this_cn.replace('{last_name_initial}', last_name.charAt(0).toLowerCase()$remove_accents );
+  this_cn = this_cn.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '');
+
+  check_entity_name_validity(this_cn,'$cn_div_id');
+
+  document.getElementById('$cn_field_id').value = this_cn;
+
+ }
+
+</script>
+
+EoRenderJS;
+
+}
 
 ######################################################
 
@@ -482,16 +531,24 @@ function render_js_username_generator($firstname_field_id,$lastname_field_id,$us
 <script>
  function update_username() {
 
-  var first_name = document.getElementById('$firstname_field_id').value;
-  var last_name  = document.getElementById('$lastname_field_id').value;
+  var first_name = document.getElementById('$firstname_field_id').value.trim();
+  var last_name  = document.getElementById('$lastname_field_id').value.trim();
   var template = '$USERNAME_FORMAT';
 
-  var actual_username = template;
+  var firstNamePY = pinyinPro.pinyin(first_name, { toneType: 'none', type: 'array' }).join('');
+  var lastNamePY  = pinyinPro.pinyin(last_name, { toneType: 'none', type: 'array' }).join('');
 
-  actual_username = actual_username.replace('{first_name}', first_name.toLowerCase()$remove_accents );
-  actual_username = actual_username.replace('{first_name_initial}', first_name.charAt(0).toLowerCase()$remove_accents );
-  actual_username = actual_username.replace('{last_name}', last_name.toLowerCase()$remove_accents );
-  actual_username = actual_username.replace('{last_name_initial}', last_name.charAt(0).toLowerCase()$remove_accents );
+  var firstNameInitial = firstNamePY.charAt(0);
+  var lastNameInitial  = lastNamePY.charAt(0);
+
+  var actual_username = template
+    .replace("{first_name}", firstNamePY.toLowerCase())
+    .replace("{last_name}", lastNamePY.toLowerCase())
+    .replace("{first_name_initial}", firstNameInitial.toLowerCase())
+    .replace("{last_name_initial}", lastNameInitial.toLowerCase())
+    .replace(/ü/g, 'v')
+    .replace(/[^a-zA-Z0-9]/g, '');
+
 
   check_entity_name_validity(actual_username,'$username_div_id');
 
@@ -502,44 +559,6 @@ function render_js_username_generator($firstname_field_id,$lastname_field_id,$us
 </script>
 
 EoRenderJS;
-
-}
-
-
-######################################################
-
-function render_js_cn_generator($firstname_field_id,$lastname_field_id,$cn_field_id,$cn_div_id) {
-
-  global $ENFORCE_SAFE_SYSTEM_NAMES;
-
-  if ($ENFORCE_SAFE_SYSTEM_NAMES == TRUE) {
-    $gen_js = "first_name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') + last_name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')";
-  }
-  else {
-    $gen_js = "first_name + ' ' + last_name";
-  }
-
-  print <<<EoRenderCNJS
-<script>
-
- var auto_cn_update = true;
-
- function update_cn() {
-
-  if ( auto_cn_update == true ) {
-    var first_name = document.getElementById('$firstname_field_id').value;
-    var last_name  = document.getElementById('$lastname_field_id').value;
-    this_cn = $gen_js;
-
-    check_entity_name_validity(this_cn,'$cn_div_id');
-
-    document.getElementById('$cn_field_id').value = this_cn;
-  }
-
- }
-</script>
-
-EoRenderCNJS;
 
 }
 

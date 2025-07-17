@@ -10,7 +10,7 @@ $attribute_map = $LDAP['default_attribute_map'];
 if (isset($LDAP['account_additional_attributes'])) { $attribute_map = ldap_complete_attribute_array($attribute_map,$LDAP['account_additional_attributes']); }
 
 if (! array_key_exists($LDAP['account_attribute'], $attribute_map)) {
-  $attribute_r = array_merge($attribute_map, array($LDAP['account_attribute'] => array("label" => "Account UID")));
+  $attribute_r = array_merge($attribute_map, array($LDAP['account_attribute'] => array("label" => "账号 (用户名)")));
 }
 
 if ( isset($_POST['setup_admin_account']) ) {
@@ -21,19 +21,19 @@ if ( isset($_POST['setup_admin_account']) ) {
   set_page_access("setup");
 
   $completed_action="{$SERVER_PATH}log_in";
-  $page_title="New administrator account";
+  $page_title="新建管理员账号";
 
-  render_header("$ORGANISATION_NAME account manager - setup administrator account", FALSE);
+  render_header("$ORGANISATION_NAME 用户管理系统 - 设置管理员账号", FALSE);
 
 }
 else {
   set_page_access("admin");
 
   $completed_action="{$THIS_MODULE_PATH}/";
-  $page_title="New account";
+  $page_title="新建用户";
   $admin_setup = FALSE;
 
-  render_header("$ORGANISATION_NAME account manager");
+  render_header("$ORGANISATION_NAME 用户管理系统");
   render_submenu();
 }
 
@@ -186,7 +186,7 @@ if (isset($_POST['create_account'])) {
 
   if ($new_account) {
 
-    $creation_message = "The account was created.";
+    $creation_message = "账号已创建！";
 
     if (isset($send_user_email) and $send_user_email == TRUE) {
 
@@ -196,12 +196,12 @@ if (isset($_POST['create_account'])) {
       $mail_subject = parse_mail_text($new_account_mail_subject, $password, $account_identifier, $this_givenname, $this_sn);
 
       $sent_email = send_email($this_mail,"$this_givenname $this_sn",$mail_subject,$mail_body);
-      $creation_message = "The account was created";
+      $creation_message = "账号已创建！";
       if ($sent_email) {
-        $creation_message .= " and an email sent to $this_mail.";
+        $creation_message .= " 邮件已发送至 $this_mail.";
       }
       else {
-        $creation_message .= " but unfortunately the email wasn't sent.<br>More information will be available in the logs.";
+        $creation_message .= " 很抱歉，邮件未能发送；请查看日志获取更多信息。";
       }
     }
 
@@ -209,7 +209,7 @@ if (isset($_POST['create_account'])) {
       $member_add = ldap_add_member_to_group($ldap_connection, $LDAP['admins_group'], $account_identifier);
       if (!$member_add) { ?>
        <div class="alert alert-warning">
-        <p class="text-center"><?php print $creation_message; ?> Unfortunately adding it to the admin group failed.</p>
+        <p class="text-center"><?php print $creation_message; ?> 添加到管理员组失败！</p>
        </div>
        <?php
       }
@@ -225,7 +225,7 @@ if (isset($_POST['create_account'])) {
    </div>
    <form action='<?php print $completed_action; ?>'>
     <p align="center">
-     <input type='submit' class="btn btn-success" value='Finished'>
+     <input type='submit' class="btn btn-success" value='完成'>
     </p>
    </form>
    <?php
@@ -235,7 +235,7 @@ if (isset($_POST['create_account'])) {
   else {
   ?>
     <div class="alert alert-warning">
-     <p class="text-center">Failed to create the account:</p>
+     <p class="text-center">创建用户失败：</p>
      <pre>
      <?php
        print ldap_error($ldap_connection) . "\n";
@@ -256,20 +256,20 @@ if (isset($_POST['create_account'])) {
 }
 
 $errors="";
-if ($invalid_cn) { $errors.="<li>The Common Name is required</li>\n"; }
-if ($invalid_givenname) { $errors.="<li>First Name is required</li>\n"; }
-if ($invalid_sn) { $errors.="<li>Last Name is required</li>\n"; }
-if ($invalid_account_identifier) {  $errors.="<li>The account identifier (" . $attribute_map[$account_attribute]['label'] . ") is invalid.</li>\n"; }
-if ($weak_password) { $errors.="<li>The password is too weak</li>\n"; }
-if ($invalid_password) { $errors.="<li>The password contained invalid characters</li>\n"; }
-if ($invalid_email) { $errors.="<li>The email address is invalid</li>\n"; }
-if ($mismatched_passwords) { $errors.="<li>The passwords are mismatched</li>\n"; }
-if ($invalid_username) { $errors.="<li>The username is invalid</li>\n"; }
+if ($invalid_cn) { $errors.="<li>必须填写显示名称</li>\n"; }
+if ($invalid_givenname) { $errors.="<li>必须填写名字</li>\n"; }
+if ($invalid_sn) { $errors.="<li>必须填写姓氏</li>\n"; }
+if ($invalid_account_identifier) {  $errors.="<li>账号标识 (" . $attribute_map[$account_attribute]['label'] . ") 无效</li>\n"; }
+if ($weak_password) { $errors.="<li>密码过于简单</li>\n"; }
+if ($invalid_password) { $errors.="<li>密码包含非法字符</li>\n"; }
+if ($invalid_email) { $errors.="<li>邮箱地址无效</li>\n"; }
+if ($mismatched_passwords) { $errors.="<li>两次输入的密码不一致</li>\n"; }
+if ($invalid_username) { $errors.="<li>账号无效</li>\n"; }
 
 if ($errors != "") { ?>
 <div class="alert alert-warning">
  <p class="text-align: center">
- There were issues creating the account:
+  创建账号时出现以下问题：
  <ul>
  <?php print $errors; ?>
  </ul>
@@ -296,6 +296,7 @@ $tabindex=1;
 </script>
 <script type="text/javascript" src="<?php print $SERVER_PATH; ?>js/generate_passphrase.js"></script>
 <script type="text/javascript" src="<?php print $SERVER_PATH; ?>js/wordlist.js"></script>
+<script type="text/javascript" src="<?php print $SERVER_PATH; ?>js/pinyin-pro.js"></script>
 <script>
 
  function check_passwords_match() {
@@ -312,7 +313,7 @@ $tabindex=1;
 
  function random_password() {
 
-  generatePassword(4,'-','password','confirm');
+  generatePassword(4,'','password','confirm');
   $("#StrengthProgressBar").zxcvbnProgressBar({ passwordInput: "#password" });
  }
 
@@ -373,17 +374,17 @@ $tabindex=1;
      ?>
 
      <div class="form-group" id="password_div">
-      <label for="password" class="col-sm-3 control-label">Password</label>
+      <label for="password" class="col-sm-3 control-label">密码</label>
       <div class="col-sm-6">
        <input tabindex="<?php print $tabindex+1; ?>" type="text" class="form-control" id="password" name="password" onkeyup="back_to_hidden('password','confirm');">
       </div>
       <div class="col-sm-1">
-       <input tabindex="<?php print $tabindex+2; ?>" type="button" class="btn btn-sm" id="password_generator" onclick="random_password();" value="Generate password">
+       <input tabindex="<?php print $tabindex+2; ?>" type="button" class="btn btn-sm" id="password_generator" onclick="random_password();" value="生成随机密码">
       </div>
      </div>
 
      <div class="form-group" id="confirm_div">
-      <label for="confirm" class="col-sm-3 control-label">Confirm</label>
+      <label for="confirm" class="col-sm-3 control-label">确认密码</label>
       <div class="col-sm-6">
        <input tabindex="<?php print $tabindex+3; ?>" type="password" class="form-control" id="confirm" name="password_match" onkeyup="check_passwords_match()">
       </div>
@@ -393,13 +394,13 @@ $tabindex=1;
       <div class="form-group" id="send_email_div">
        <label for="send_email" class="col-sm-3 control-label"> </label>
        <div class="col-sm-6">
-        <input tabindex="<?php print $tabindex+4; ?>" type="checkbox" class="form-check-input" id="send_email_checkbox" name="send_email" <?php if ($disabled_email_tickbox == TRUE) { print "disabled"; } ?>>  Email these credentials to the user?
+        <input tabindex="<?php print $tabindex+4; ?>" type="checkbox" class="form-check-input" id="send_email_checkbox" name="send_email" <?php if ($disabled_email_tickbox == TRUE) { print "disabled"; } ?>>  通过电子邮件将这些凭证发送给用户？
        </div>
       </div>
 <?php } ?>
 
      <div class="form-group">
-       <button tabindex="<?php print $tabindex+5; ?>" type="submit" class="btn btn-warning">Create account</button>
+       <button tabindex="<?php print $tabindex+5; ?>" type="submit" class="btn btn-warning">创建用户</button>
      </div>
 
     </form>
@@ -408,7 +409,7 @@ $tabindex=1;
      <div id="StrengthProgressBar" class="progress-bar"></div>
     </div>
 
-    <div><sup>&ast;</sup>The account identifier</div>
+    <div><sup>&ast;</sup> 必填项</div>
 
    </div>
   </div>

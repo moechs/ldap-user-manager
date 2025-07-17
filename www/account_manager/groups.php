@@ -7,7 +7,7 @@ include_once "ldap_functions.inc.php";
 include_once "module_functions.inc.php";
 set_page_access("admin");
 
-render_header("$ORGANISATION_NAME account manager");
+render_header("$ORGANISATION_NAME 用户管理系统");
 render_submenu();
 
 $ldap_connection = open_ldap_connection();
@@ -20,10 +20,10 @@ if (isset($_POST['delete_group'])) {
  $del_group = ldap_delete_group($ldap_connection,$this_group);
 
  if ($del_group) {
-   render_alert_banner("Group <strong>$this_group</strong> was deleted.");
+   render_alert_banner("用户组 <strong>$this_group</strong> 已删除！");
  }
  else {
-   render_alert_banner("Group <strong>$this_group</strong> wasn't deleted.  See the logs for more information.","danger",15000);
+   render_alert_banner("用户组 <strong>$this_group</strong> 删除失败，请检查日志以查看更多信息！","danger",15000);
  }
 
 }
@@ -44,7 +44,6 @@ render_js_username_check();
   group_form.classList.replace('invisible','visible');
   group_submit.classList.replace('invisible','visible');
 
-
  }
 
 </script>
@@ -53,15 +52,15 @@ render_js_username_check();
  <div class="form-inline" id="new_group_div">
   <form action="<?php print "{$THIS_MODULE_PATH}"; ?>/show_group.php" method="post">
    <input type="hidden" name="new_group">
-   <button type="button" class="btn btn-light"><?php print count($groups);?> group<?php if (count($groups) != 1) { print "s"; }?></button>  &nbsp;  <button id="show_new_group" class="form-control btn btn-default" type="button" onclick="show_new_group_form();">New group</button>
-   <input type="text" class="form-control invisible" name="group_name" id="group_name" placeholder="Group name" onkeyup="check_entity_name_validity(document.getElementById('group_name').value,'new_group_div');"><button id="add_group" class="form-control btn btn-primary btn-sm invisible" type="submit">Add</button>
+   <button type="button" class="btn btn-light">共 <?php print count($groups);?> 个用户组</button>  &nbsp;  <button id="show_new_group" class="form-control btn btn-default" type="button" onclick="show_new_group_form();">创建用户组</button>
+   <input type="text" class="form-control invisible" name="group_name" id="group_name" placeholder="用户组名称" onkeyup="check_entity_name_validity(document.getElementById('group_name').value,'new_group_div');"><button id="add_group" class="form-control btn btn-primary btn-sm invisible" type="submit">添加</button>
   </form>
  </div>
- <input class="form-control" id="search_input" type="text" placeholder="Search..">
+ <input class="form-control" id="search_input" type="text" placeholder="搜索..">
  <table class="table table-striped">
   <thead>
    <tr>
-     <th>Group name</th>
+     <th>用户组名称</th>
    </tr>
   </thead>
  <tbody id="grouplist">

@@ -7,7 +7,7 @@ include_once "ldap_functions.inc.php";
 include_once "module_functions.inc.php";
 set_page_access("admin");
 
-render_header("$ORGANISATION_NAME account manager");
+render_header("$ORGANISATION_NAME 用户管理系统");
 render_submenu();
 
 $ldap_connection = open_ldap_connection();
@@ -15,7 +15,7 @@ $ldap_connection = open_ldap_connection();
 if (!isset($_POST['group_name']) and !isset($_GET['group_name'])) {
 ?>
  <div class="alert alert-danger">
-  <p class="text-center">The group name is missing.</p>
+  <p class="text-center">缺少组名。</p>
  </div>
 <?php
  render_footer();
@@ -29,7 +29,7 @@ else {
 if ($ENFORCE_SAFE_SYSTEM_NAMES == TRUE and !preg_match("/$USERNAME_REGEX/",$group_cn)) {
 ?>
  <div class="alert alert-danger">
-  <p class="text-center">The group name is invalid.</p>
+  <p class="text-center">无效的组名。</p>
  </div>
 <?php
  render_footer();
@@ -43,7 +43,7 @@ $initialise_group = FALSE;
 $new_group = FALSE;
 $group_exists = FALSE;
 
-$create_group_message = "Add members to create the new group";
+$create_group_message = "添加成员以创建新组";
 $current_members = array();
 $full_dn = $create_group_message;
 $has_been = "";
@@ -62,14 +62,14 @@ if (isset($_POST['new_group'])) {
 elseif (isset($_POST['initialise_group'])) {
   $initialise_group = TRUE;
   $full_dn = "{$LDAP['group_attribute']}=$group_cn,{$LDAP['group_dn']}";
-  $has_been = "created";
+  $has_been = "创建";
 }
 else {
   $this_group = ldap_get_group_entry($ldap_connection,$group_cn);
   if ($this_group) {
     $current_members = ldap_get_group_members($ldap_connection,$group_cn);
     $full_dn = $this_group[0]['dn'];
-    $has_been = "updated";
+    $has_been = "更新";
     $group_exists = TRUE;
   }
   else {
@@ -165,7 +165,7 @@ if (isset($_POST["update_members"])) {
     $initial_member = array_shift($members_to_add);
     $group_add = ldap_new_group($ldap_connection,$group_cn,$initial_member,$to_update);
     if (!$group_add) {
-      render_alert_banner("There was a problem creating the group.  See the logs for more information.","danger",10000);
+      render_alert_banner("创建组时出现问题，请查看日志获取更多信息。","danger",10000);
       $group_exists = FALSE;
       $new_group = TRUE;
     }
@@ -189,10 +189,10 @@ if (isset($_POST["update_members"])) {
       $updated_attr = ldap_update_group_attributes($ldap_connection,$group_cn,$to_update);
 
       if ($updated_attr) {
-        render_alert_banner("The group attributes have been updated.");
+        render_alert_banner("组属性已更新。");
       }
       else {
-        render_alert_banner("There was a problem updating the group attributes.  See the logs for more information.","danger",15000);
+        render_alert_banner("更新组属性时出现问题，请查看日志获取更多信息。","danger",15000);
       }
 
     }
@@ -213,10 +213,10 @@ if (isset($_POST["update_members"])) {
 
       $group_members = ldap_get_group_members($ldap_connection,$group_cn);
       $non_members = array_diff($all_people,$group_members);
-      render_alert_banner("Groups can't be empty, so the final member hasn't been removed.  You could try deleting the group","danger",15000);
+      render_alert_banner("组不能为空，因此最后一个成员未被移除。您可以尝试删除该组。","danger",15000);
     }
     else {
-      render_alert_banner("The group has been {$has_been}.");
+      render_alert_banner("该组已{$has_been}。");
     }
 
   }
@@ -347,9 +347,9 @@ ldap_close($ldap_connection);
       <div class="panel panel-default">
 
         <div class="panel-heading clearfix">
-          <h3 class="panel-title pull-left" style="padding-top: 7.5px;"><?php print $group_cn; ?><?php if ($group_cn == $LDAP["admins_group"]) { print " <sup>(admin group)</sup>" ; } ?></h3>
-          <button class="btn btn-warning pull-right" onclick="show_delete_group_button();" <?php if ($group_cn == $LDAP["admins_group"]) { print "disabled"; } ?>>Delete group</button>
-          <form action="<?php print "{$THIS_MODULE_PATH}"; ?>/groups.php" method="post" enctype="multipart/form-data"><input type="hidden" name="delete_group" value="<?php print $group_cn; ?>"><button class="btn btn-danger pull-right invisible" id="delete_group">Confirm deletion</button></form>
+          <h3 class="panel-title pull-left" style="padding-top: 7.5px;"><?php print $group_cn; ?><?php if ($group_cn == $LDAP["admins_group"]) { print " <sup>(管理员组)</sup>" ; } ?></h3>
+          <button class="btn btn-warning pull-right" onclick="show_delete_group_button();" <?php if ($group_cn == $LDAP["admins_group"]) { print "disabled"; } ?>>删除组</button>
+          <form action="<?php print "{$THIS_MODULE_PATH}"; ?>/groups.php" method="post" enctype="multipart/form-data"><input type="hidden" name="delete_group" value="<?php print $group_cn; ?>"><button class="btn btn-danger pull-right invisible" id="delete_group">确认删除</button></form>
         </div>
 
         <ul class="list-group">
@@ -359,18 +359,18 @@ ldap_close($ldap_connection);
         <div class="panel-body">
           <div class="row">
             <div class="dual-list list-left col-md-5">
-              <strong>Members</strong>
+              <strong>当前组内成员</strong>
               <div class="well">
                 <div class="row">
                   <div class="col-md-10">
                     <div class="input-group">
                       <span class="input-group-addon glyphicon glyphicon-search"></span>
-                      <input type="text" name="SearchDualList" class="form-control" placeholder="search" />
+                      <input type="text" name="SearchDualList" class="form-control" placeholder="搜索" />
                     </div>
                   </div>
                   <div class="col-md-2">
                     <div class="btn-group">
-                      <a class="btn btn-default selector" title="select all"><i class="glyphicon glyphicon-unchecked"></i></a>
+                      <a class="btn btn-default selector" title="全选"><i class="glyphicon glyphicon-unchecked"></i></a>
                     </div>
                   </div>
                 </div>
@@ -399,21 +399,21 @@ ldap_close($ldap_connection);
                 <input type="hidden" name="update_members">
                 <input type="hidden" name="group_name" value="<?php print urlencode($group_cn); ?>">
                 <?php if ($new_group == TRUE) { ?><input type="hidden" name="initialise_group"><?php } ?>
-                <button id="submit_members" class="btn btn-info" <?php if (count($group_members)==0) print 'disabled'; ?> type="submit" onclick="update_form_with_users()">Save</button>
+                <button id="submit_members" class="btn btn-info" <?php if (count($group_members)==0) print 'disabled'; ?> type="submit" onclick="update_form_with_users()">保存</button>
             </div>
 
             <div class="dual-list list-right col-md-5">
-              <strong>Available accounts</strong>
+              <strong>其他可用账号</strong>
               <div class="well">
                 <div class="row">
                   <div class="col-md-2">
                     <div class="btn-group">
-                      <a class="btn btn-default selector" title="select all"><i class="glyphicon glyphicon-unchecked"></i></a>
+                      <a class="btn btn-default selector" title="全选"><i class="glyphicon glyphicon-unchecked"></i></a>
                     </div>
                   </div>
                   <div class="col-md-10">
                     <div class="input-group">
-                      <input type="text" name="SearchDualList" class="form-control" placeholder="search" />
+                      <input type="text" name="SearchDualList" class="form-control" placeholder="搜索" />
                       <span class="input-group-addon glyphicon glyphicon-search"></span>
                     </div>
                   </div>
@@ -435,7 +435,7 @@ ldap_close($ldap_connection);
 if (count($attribute_map) > 0) { ?>
       <div class="panel panel-default">
         <div class="panel-heading clearfix">
-          <h3 class="panel-title pull-left" style="padding-top: 7.5px;">Group attributes</h3>
+          <h3 class="panel-title pull-left" style="padding-top: 7.5px;">组属性</h3>
         </div>
         <div class="panel-body">
           <div class="col-md-8">
@@ -455,7 +455,7 @@ if (count($attribute_map) > 0) { ?>
             <div class="row">
               <div class="col-md-4 col-md-offset-3">
                 <div class="form-group">
-                  <button id="submit_attributes" class="btn btn-info" <?php if (count($group_members)==0) print 'disabled'; ?> type="submit" tabindex="<?php print $tabindex; ?>" onclick="update_form_with_users()">Save</button>
+                  <button id="submit_attributes" class="btn btn-info" <?php if (count($group_members)==0) print 'disabled'; ?> type="submit" tabindex="<?php print $tabindex; ?>" onclick="update_form_with_users()">保存</button>
                 </div>
               </div>
             </div>

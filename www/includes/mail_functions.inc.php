@@ -4,23 +4,23 @@ require_once "/opt/PHPMailer/src/PHPMailer.php";
 require_once "/opt/PHPMailer/src/SMTP.php";
 require_once "/opt/PHPMailer/src/Exception.php";
 
-#Default email text
+# 默认邮件内容
 
-$new_account_mail_subject = (getenv('NEW_ACCOUNT_EMAIL_SUBJECT') ? getenv('NEW_ACCOUNT_EMAIL_SUBJECT') : "Your {organisation} account has been created.");
+$new_account_mail_subject = (getenv('NEW_ACCOUNT_EMAIL_SUBJECT') ? getenv('NEW_ACCOUNT_EMAIL_SUBJECT') : "您的 {organisation} 账户已创建");
 $new_account_mail_body = getenv('NEW_ACCOUNT_EMAIL_BODY') ?: <<<EoNA
-You've been set up with an account for {organisation}.  Your credentials are:
+您已成功在 {organisation} 创建账户。您的登录信息如下：
 <p>
-Login: {login}<br>
-Password: {password}
+账号：{login}<br>
+密码：{password}
 <p>
-You should log into <a href="{change_password_url}">{change_password_url}</a> and change the password as soon as possible.
+请尽快登录 <a href="{change_password_url}">{change_password_url}</a> 并修改密码。
 EoNA;
 
-$reset_password_mail_subject = (getenv('RESET_PASSWORD_EMAIL_SUBJECT') ? getenv('RESET_PASSWORD_EMAIL_SUBJECT') : "Your {organisation} password has been reset.");
+$reset_password_mail_subject = (getenv('RESET_PASSWORD_EMAIL_SUBJECT') ? getenv('RESET_PASSWORD_EMAIL_SUBJECT') : "您的 {organisation} 密码已重置");
 $reset_password_mail_body = getenv('RESET_PASSWORD_EMAIL_BODY') ?: <<<EoRP
-Your password for {organisation} has been reset.  Your new password is {password}
+您在 {organisation} 的密码已被重置，新密码为：{password}
 <p>
-You should log into <a href="{change_password_url}">{change_password_url}</a> and change this password as soon as possible.
+请尽快登录 <a href="{change_password_url}">{change_password_url}</a> 并修改该密码。
 EoRP;
 
 
@@ -50,14 +50,10 @@ function send_email($recipient_email,$recipient_name,$subject,$body) {
   $mail->isSMTP();
 
   $mail->SMTPDebug = $SMTP['debug_level'];
-  $mail->Debugoutput = function($message, $level) { error_log("$log_prefix SMTP (level $level): $message"); };
+  $mail->Debugoutput = function($message, $level) { error_log("$log_prefix SMTP（级别 $level）：$message"); };
 
   $mail->Host = $SMTP['host'];
   $mail->Port = $SMTP['port'];
-
-  if (isset($SMTP['helo'])) {
-    $mail->Helo = $SMTP['helo'];
-  }
 
   if (isset($SMTP['user'])) {
     $mail->SMTPAuth = true;
@@ -76,11 +72,11 @@ function send_email($recipient_email,$recipient_name,$subject,$body) {
   $mail->IsHTML(true);
 
   if (!$mail->Send())  {
-    error_log("$log_prefix SMTP: Unable to send email: " . $mail->ErrorInfo);
+    error_log("$log_prefix SMTP：无法发送邮件：" . $mail->ErrorInfo);
     return FALSE;
   }
   else {
-    error_log("$log_prefix SMTP: sent an email to $recipient_email ($recipient_name)");
+    error_log("$log_prefix SMTP：已向 $recipient_email ($recipient_name) 发送邮件");
     return TRUE;
   }
 
